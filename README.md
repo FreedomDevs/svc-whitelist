@@ -45,11 +45,11 @@ http://127.0.0.1:8000/docs
 
 # Эндпоинты
 ```
-post | /v1/whitelist | add player <br>
-get | /v1/whitrlist/check | check white list <br>
-delete | /v1/whitelist | del player <br>
-get | /health | health check <br>
-get | /live | liveness <br>
+post | /v1/whitelist | Добавить игрока 
+get | /v1/whitrlist/check | Проверка whitelist 
+delete | /v1/whitelist | Удалить игрока 
+get | /health | Сервер здоров
+get | /live | Сервер жив
 ```
 
 ## HTTP Коды статусов
