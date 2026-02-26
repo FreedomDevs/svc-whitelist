@@ -20,9 +20,9 @@ http://127.0.0.1:8000/docs
 ```
 
 {
-  "servername": "test_server", <br>
-  "userid": "1", <br>
-  "username": "Alex" <br>
+  "servername": "test_server", 
+  "userid": "1", 
+  "username": "Alex" 
 }
 
 ```
@@ -61,5 +61,4 @@ WHITELIST_ALREADY_EXISTS |	409 |	Игрок уже в whitelist
 WHITELIST_NOT_FOUND |	404 |	Игрок не найден 
 HEALTH_OK |	200 |	Сервис здоров
 LIVE_OK |	200 |	Сервис жив
-
 ```
