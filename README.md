@@ -32,13 +32,13 @@ http://127.0.0.1:8000/docs
 Если уже был добавлен:
 ```
 {
-  "error": { <br>
-    "message": "User already in whitelist", <br>
-    "code": "WHITELIST_ALREADY_EXISTS" <br>
-  }, <br>
-  "meta": { <br>
-    "traceId": "8d4c5c8c4e624154bd7f5105f6254bc7", <br>
-    "timestamp": "2026-02-26T17:05:51.909123Z" <br>
+  "error": { 
+    "message": "User already in whitelist", 
+    "code": "WHITELIST_ALREADY_EXISTS" 
+  }, 
+  "meta": { 
+    "traceId": "8d4c5c8c4e624154bd7f5105f6254bc7", 
+    "timestamp": "2026-02-26T17:05:51.909123Z" 
   }
 }
 ```
@@ -54,14 +54,12 @@ get | /live | liveness <br>
 
 ## HTTP Коды статусов
 ```
-WHITELIST_CREATED_OK |	201 |	Игрок добавлен <br>
-WHITELIST_CHECK_OK |	200 |	Проверка whitelist <br>
-WHITELIST_REMOVED_OK |	200 |	Игрок удалён <br>
-WHITELIST_ALREADY_EXISTS |	409 |	Игрок уже в whitelist <br>
-WHITELIST_NOT_FOUND |	404 |	Игрок не найден <br>
-
-```
+WHITELIST_CREATED_OK |	201 |	Игрок добавлен 
+WHITELIST_CHECK_OK |	200 |	Проверка whitelist 
+WHITELIST_REMOVED_OK |	200 |	Игрок удалён 
+WHITELIST_ALREADY_EXISTS |	409 |	Игрок уже в whitelist 
+WHITELIST_NOT_FOUND |	404 |	Игрок не найден 
 HEALTH_OK |	200 |	Сервис здоров
 LIVE_OK |	200 |	Сервис жив
 
-
+```
