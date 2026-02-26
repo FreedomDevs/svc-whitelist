@@ -1,6 +1,9 @@
 # svc-whitelist
 Микросервис управления белым списком игроков.  
 Предоставляет операции для добавления игроков в whitelist серверов, проверки доступа и удаления записей.
+
+IP локальной базы данных из docker-compose: [fd98:2dd6:8f48:1d99:8164:b5f6:6317:0002]:5432
+
 ## Клонирование репозитория
 
 ```bash
@@ -9,6 +12,8 @@ cd svc-whitelist
 ```
 ## Установка зависимостей
 ```
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 ## Запуск
@@ -16,7 +21,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 Документация будет доступна по адресу:
-http://127.0.0.1:8000/docs
+http://localhost:9008/docs
 
 # Проверка
 ```
@@ -64,3 +69,4 @@ WHITELIST_NOT_FOUND |	404 |	Игрок не найден
 HEALTH_OK |	200 |	Сервис здоров
 LIVE_OK |	200 |	Сервис жив
 ```
+

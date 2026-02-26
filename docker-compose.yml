@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+
+    volumes:
+      - db:/var/lib/postgresql/data
+
+    networks:
+      net:
+        ipv6_address: fd98:2dd6:8f48:1d99:8164:b5f6:6317:0002
+
+networks:
+  net:
+    enable_ipv6: true
+    enable_ipv4: false
+    ipam:
+      config:
+        - subnet: fd98:2dd6:8f48:1d99:8164:b5f6:6317:0000/112
+
+volumes:
+  db:
+
