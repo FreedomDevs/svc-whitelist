@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```
 ## Запуск
 ```
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 0.0.0.0 --port 9008 --reload
 ```
 Документация будет доступна по адресу:
 http://localhost:9008/docs
