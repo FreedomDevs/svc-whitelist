@@ -9,7 +9,7 @@ app = FastAPI(title="svc-whitelist")
 
 # вайтлист ендпоинты
 
-@app.post("/v1/whitelist", status_code=201)
+@app.post("/whitelist", status_code=201)
 def add_to_whitelist(req: WhitelistCreateRequest, request: Request):
     trace_id = request.headers.get("X-Trace-Id")
 
@@ -36,7 +36,7 @@ def add_to_whitelist(req: WhitelistCreateRequest, request: Request):
     )
 
 
-@app.get("/v1/whitelist/check")
+@app.get("/whitelist/check")
 def check_whitelist(request: Request, userid: str, servername: str | None = None):
     trace_id = request.headers.get("X-Trace-Id")
 
@@ -67,7 +67,7 @@ def check_whitelist(request: Request, userid: str, servername: str | None = None
     )
 
 
-@app.delete("/v1/whitelist")
+@app.delete("/whitelist")
 def remove_from_whitelist(req: WhitelistDeleteRequest, request: Request):
     trace_id = request.headers.get("X-Trace-Id")
 
