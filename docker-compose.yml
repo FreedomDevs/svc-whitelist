@@ -12,15 +12,17 @@ services:
 
     networks:
       net:
-        ipv6_address: fd98:2dd6:8f48:1d99:8164:b5f6:6317:0002
+        ipv6_address: fd98:2dd6:8f48:1d99:8164:b5f6::2
 
 networks:
   net:
     enable_ipv6: true
     enable_ipv4: false
+    driver_opts:
+      com.docker.network.driver.mtu: "65535"
     ipam:
       config:
-        - subnet: fd98:2dd6:8f48:1d99:8164:b5f6:6317:0000/112
+        - subnet: fd98:2dd6:8f48:1d99:8164:b5f6::/96
 
 volumes:
   db:
