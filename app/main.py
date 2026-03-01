@@ -3,6 +3,8 @@ from app.schemas import WhitelistCreateRequest, WhitelistDeleteRequest
 from app.responses import success_response, error_response
 from app.storage import whitelist
 from app.enums import Codes
+from sqlalchemy import text
+from app.db import engine
 
 app = FastAPI(title="svc-whitelist")
 
@@ -93,25 +95,43 @@ def remove_from_whitelist(req: WhitelistDeleteRequest, request: Request):
     )
 
 
-# системные ендпоинты
+
 
 @app.get("/health")
 def health(request: Request):
     trace_id = request.headers.get("X-Trace-Id")
 
+    details: dict[str, str] = {}
+    ready = True
+
+    # мемори
+    try:
+        _ = len(whitelist)
+        details["memory"] = "OK"
+    except Exception as e:
+        details["memory"] = f"ERROR: {str(e)}"
+        ready = False
+
+    # датабаза
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        details["database"] = "OK"
+    except Exception as e:
+        details["database"] = f"ERROR: {str(e)}"
+        ready = False
+
+
     return success_response(
         data={
-            "status": "UP",
-            "ready": True,
-            "details": {
-                "memory": "OK"
-            }
+            "status": "UP" if ready else "ERROR",
+            "ready": ready,
+            "details": details
         },
         message="Service is healthy",
         code=Codes.HEALTH_OK,
         trace_id=trace_id
     )
-
 
 @app.get("/live")
 def live(request: Request):
