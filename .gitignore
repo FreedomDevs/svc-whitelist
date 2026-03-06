@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-__pycache__/
-.idea/
-.venv/
-
-=======
 .idea/
 __pycache__/
 .venv/
->>>>>>> 64b2d73 (Добавил .gitignore и исправил опечатку в имени файла)
