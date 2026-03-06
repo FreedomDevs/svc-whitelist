@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:18-alpine
+    container_name: svc-whitelist-postgres
 
     environment:
       POSTGRES_USER: postgres
@@ -9,6 +10,22 @@ services:
 
     volumes:
       - db:/var/lib/postgresql/data
+
+    networks:
+      net:
+        ipv6_address: fd98:2dd6:8f48:1d99:8164:b5f6::3
+  
+  app-dev:
+    container_name: svc-whitelist-app-dev
+    build:
+      context: .
+      dockerfile: Dockerfile-test
+    volumes:
+      - ./app:/app:rw
+    depends_on:
+      - postgres
+    cap_add:
+      - NET_BIND_SERVICE
 
     networks:
       net:
