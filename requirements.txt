@@ -8,7 +8,7 @@ fastapi==0.133.1
 greenlet==3.3.2
 h11==0.16.0
 idna==3.11
-psycopg2==2.9.11
+psycopg2-binary==2.9.11
 pydantic==2.12.5
 pydantic_core==2.41.5
 SQLAlchemy==2.0.48

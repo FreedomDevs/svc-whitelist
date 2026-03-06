@@ -1,12 +1,14 @@
 from fastapi import FastAPI, Request
 from app.schemas import WhitelistCreateRequest, WhitelistDeleteRequest
 from app.responses import success_response, error_response
-from app.storage import whitelist
+from app.db import SessionLocal
+from app.models import Base, Whitelist
 from app.enums import Codes
 from sqlalchemy import text
 from app.db import engine
 
 app = FastAPI(title="svc-whitelist")
+Base.metadata.create_all(bind=engine)
 
 
 # вайтлист ендпоинты
@@ -15,47 +17,59 @@ app = FastAPI(title="svc-whitelist")
 def add_to_whitelist(req: WhitelistCreateRequest, request: Request):
     trace_id = request.headers.get("X-Trace-Id")
 
-    server = whitelist.setdefault(req.servername, {})
+    db = SessionLocal()
 
-    if req.userid in server:
+    existing = db.query(Whitelist).filter(
+        Whitelist.servername == req.servername,
+        Whitelist.userid == req.userid
+    ).first()
+
+    if existing:
         return error_response(
             message="User already in whitelist",
             code=Codes.WHITELIST_ALREADY_EXISTS,
             trace_id=trace_id
         )
 
-    server[req.userid] = req.username
+    user = Whitelist(
+        servername=req.servername,
+        userid=req.userid,
+        username=req.username
+    )
+
+    db.add(user)
+    db.commit()
 
     return success_response(
-        data={
-            "servername": req.servername,
-            "userid": req.userid,
-            "username": req.username
-        },
+        data=req.dict(),
         message="User added to whitelist",
         code=Codes.WHITELIST_CREATED_OK,
         trace_id=trace_id
     )
-
-
 @app.get("/whitelist/check")
 def check_whitelist(request: Request, userid: str, servername: str | None = None):
     trace_id = request.headers.get("X-Trace-Id")
 
-    # есть ли пользователь на конкретном сервере
+    db = SessionLocal()
+
     if servername:
+        exists = db.query(Whitelist).filter(
+            Whitelist.servername == servername,
+            Whitelist.userid == userid
+        ).first() is not None
+
         return success_response(
-            data={"whitelisted": userid in whitelist.get(servername, {})},
+            data={"whitelisted": exists},
             message="Whitelist status checked",
             code=Codes.WHITELIST_CHECK_OK,
             trace_id=trace_id
         )
 
-    # на каких серверах пользователь есть
-    servers = [
-        server for server, users in whitelist.items()
-        if userid in users
-    ]
+    rows = db.query(Whitelist).filter(
+        Whitelist.userid == userid
+    ).all()
+
+    servers = [r.servername for r in rows]
 
     return success_response(
         data={
@@ -67,25 +81,26 @@ def check_whitelist(request: Request, userid: str, servername: str | None = None
         code=Codes.WHITELIST_CHECK_OK,
         trace_id=trace_id
     )
-
-
 @app.delete("/whitelist")
 def remove_from_whitelist(req: WhitelistDeleteRequest, request: Request):
     trace_id = request.headers.get("X-Trace-Id")
 
-    server = whitelist.get(req.servername)
+    db = SessionLocal()
 
-    if not server or req.userid not in server:
+    user = db.query(Whitelist).filter(
+        Whitelist.servername == req.servername,
+        Whitelist.userid == req.userid
+    ).first()
+
+    if not user:
         return error_response(
             message="User not found in whitelist",
             code=Codes.WHITELIST_NOT_FOUND,
             trace_id=trace_id
         )
 
-    del server[req.userid]
-
-    if not server:
-        del whitelist[req.servername]
+    db.delete(user)
+    db.commit()
 
     return success_response(
         data=None,
@@ -106,7 +121,8 @@ def health(request: Request):
 
     # мемори
     try:
-        _ = len(whitelist)
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
         details["memory"] = "OK"
     except Exception as e:
         details["memory"] = f"ERROR: {str(e)}"
