@@ -35,7 +35,7 @@ http://localhost:9008/docs
 
 ```
 Ответ:
-```"POST /v1/whitelist HTTP/1.1" 201 Created```
+```"POST /whitelist HTTP/1.1" 201 Created```
 
 Если уже был добавлен:
 ```

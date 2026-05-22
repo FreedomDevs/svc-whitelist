@@ -6,6 +6,9 @@ from app.models import Base, Whitelist
 from app.enums import Codes
 from sqlalchemy import text
 from app.db import engine
+from fastapi import FastAPI, Request, Header
+
+
 
 app = FastAPI(title="svc-whitelist")
 Base.metadata.create_all(bind=engine)
@@ -14,13 +17,17 @@ Base.metadata.create_all(bind=engine)
 # вайтлист ендпоинты
 
 @app.post("/whitelist", status_code=201)
-def add_to_whitelist(req: WhitelistCreateRequest, request: Request):
+def add_to_whitelist(
+    req: WhitelistCreateRequest,
+    request: Request,
+    x_server_name: str = Header(...)
+):
     trace_id = request.headers.get("X-Trace-Id")
 
     db = SessionLocal()
 
     existing = db.query(Whitelist).filter(
-        Whitelist.servername == req.servername,
+        Whitelist.servername == x_server_name,
         Whitelist.userid == req.userid
     ).first()
 
@@ -32,7 +39,7 @@ def add_to_whitelist(req: WhitelistCreateRequest, request: Request):
         )
 
     user = Whitelist(
-        servername=req.servername,
+        servername=x_server_name,
         userid=req.userid,
         username=req.username
     )
@@ -41,29 +48,44 @@ def add_to_whitelist(req: WhitelistCreateRequest, request: Request):
     db.commit()
 
     return success_response(
-        data=req.dict(),
+        data={
+            "servername": x_server_name,
+            **req.dict()
+        },
         message="User added to whitelist",
         code=Codes.WHITELIST_CREATED_OK,
         trace_id=trace_id
     )
+
+from fastapi import Header
+
 @app.get("/whitelist/check")
-def check_whitelist(request: Request, userid: str, servername: str | None = None):
+def check_whitelist(
+    request: Request,
+    userid: str,
+    x_server_name: str | None = Header(default=None)
+):
     trace_id = request.headers.get("X-Trace-Id")
 
     db = SessionLocal()
 
-    if servername:
+
+    if x_server_name:
         exists = db.query(Whitelist).filter(
-            Whitelist.servername == servername,
+            Whitelist.servername == x_server_name,
             Whitelist.userid == userid
         ).first() is not None
 
         return success_response(
-            data={"whitelisted": exists},
+            data={
+                "servername": x_server_name,
+                "whitelisted": exists
+            },
             message="Whitelist status checked",
             code=Codes.WHITELIST_CHECK_OK,
             trace_id=trace_id
         )
+
 
     rows = db.query(Whitelist).filter(
         Whitelist.userid == userid
@@ -81,14 +103,21 @@ def check_whitelist(request: Request, userid: str, servername: str | None = None
         code=Codes.WHITELIST_CHECK_OK,
         trace_id=trace_id
     )
+
+
+
 @app.delete("/whitelist")
-def remove_from_whitelist(req: WhitelistDeleteRequest, request: Request):
+def remove_from_whitelist(
+    req: WhitelistDeleteRequest,
+    request: Request,
+    x_server_name: str = Header(...)
+):
     trace_id = request.headers.get("X-Trace-Id")
 
     db = SessionLocal()
 
     user = db.query(Whitelist).filter(
-        Whitelist.servername == req.servername,
+        Whitelist.servername == x_server_name,
         Whitelist.userid == req.userid
     ).first()
 
@@ -108,6 +137,7 @@ def remove_from_whitelist(req: WhitelistDeleteRequest, request: Request):
         code=Codes.WHITELIST_REMOVED_OK,
         trace_id=trace_id
     )
+
 
 
 
