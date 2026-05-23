@@ -1,5 +1,10 @@
-from fastapi import FastAPI, Request
-from app.schemas import WhitelistCreateRequest, WhitelistDeleteRequest
+from typing import Optional, TypeVar, Type
+
+from fastapi import FastAPI, Request, HTTPException, Depends
+from pydantic import BaseModel
+from starlette import status
+
+from app.schemas import WhitelistCreateRequest, WhitelistDeleteRequest, UserBody
 from app.responses import success_response, error_response
 from app.db import SessionLocal
 from app.models import Base, Whitelist
@@ -14,22 +19,60 @@ app = FastAPI(title="svc-whitelist")
 Base.metadata.create_all(bind=engine)
 
 
+
+
+
+async def get_server_name(
+        request: Request,
+        eauth_type: Optional[str] = Header(None, alias="eauth-type"),
+        eauth_server_name: Optional[str] = Header(None, alias="eauth-server-name"),
+) -> str:
+    if not eauth_type or eauth_type == "user":
+        # Если user — читаем имя сервера из Body.
+        # Так как нам нужно прочитать JSON, используем request.json()
+        try:
+            body_data = await request.json()
+            # Валидируем данные через Pydantic-модель
+            user_data = UserBody(**body_data)
+            return user_data.server_name
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Неверный формат Body. Ожидалось поле 'server_name'."
+            )
+
+    elif eauth_type == "server":
+        # Если server — проверяем заголовок "eauth"
+        if not eauth_server_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Для eauth-type='server' необходим заголовок 'eauth'"
+            )
+        return eauth_server_name
+
+    else:
+        # Если передан неизвестный тип авторизации
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Неподдерживаемый eauth-type. Допустимы 'user' или 'server'."
+        )
 # вайтлист ендпоинты
 
 @app.post("/whitelist", status_code=201)
 def add_to_whitelist(
     req: WhitelistCreateRequest,
     request: Request,
-    x_server_name: str = Header(...)
+    server_name: str = Depends(get_server_name),
 ):
     trace_id = request.headers.get("X-Trace-Id")
 
     db = SessionLocal()
 
     existing = db.query(Whitelist).filter(
-        Whitelist.servername == x_server_name,
+        Whitelist.servername == server_name,
         Whitelist.userid == req.userid
     ).first()
+
 
     if existing:
         return error_response(
@@ -39,7 +82,7 @@ def add_to_whitelist(
         )
 
     user = Whitelist(
-        servername=x_server_name,
+        servername=server_name,
         userid=req.userid,
         username=req.username
     )
@@ -49,7 +92,7 @@ def add_to_whitelist(
 
     return success_response(
         data={
-            "servername": x_server_name,
+            "servername": server_name,
             **req.dict()
         },
         message="User added to whitelist",
@@ -63,22 +106,22 @@ from fastapi import Header
 def check_whitelist(
     request: Request,
     userid: str,
-    x_server_name: str | None = Header(default=None)
+    server_name: str = Depends(get_server_name),
 ):
     trace_id = request.headers.get("X-Trace-Id")
 
     db = SessionLocal()
 
 
-    if x_server_name:
+    if server_name:
         exists = db.query(Whitelist).filter(
-            Whitelist.servername == x_server_name,
+            Whitelist.servername == server_name,
             Whitelist.userid == userid
         ).first() is not None
 
         return success_response(
             data={
-                "servername": x_server_name,
+                "servername": server_name,
                 "whitelisted": exists
             },
             message="Whitelist status checked",
@@ -110,14 +153,14 @@ def check_whitelist(
 def remove_from_whitelist(
     req: WhitelistDeleteRequest,
     request: Request,
-    x_server_name: str = Header(...)
+    server_name = Depends(get_server_name),
 ):
     trace_id = request.headers.get("X-Trace-Id")
 
     db = SessionLocal()
 
     user = db.query(Whitelist).filter(
-        Whitelist.servername == x_server_name,
+        Whitelist.servername == server_name,
         Whitelist.userid == req.userid
     ).first()
 

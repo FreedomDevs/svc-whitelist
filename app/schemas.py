@@ -8,3 +8,6 @@ class WhitelistCreateRequest(BaseModel):
 
 class WhitelistDeleteRequest(BaseModel):
     userid: str
+
+class UserBody(BaseModel):
+    server_name: str
