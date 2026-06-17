@@ -60,8 +60,7 @@ POST `/whitelist`
 ```json
 {
   "servername": "test_server",
-  "userid": "1",
-  "username": "Alex"
+  "userid": "1"
 }
 ```
 
@@ -109,7 +108,7 @@ GET `/whitelist/check`
 ```json
 {
   "data": {
-    "allowed": true
+    "in_whitelist": true
   },
   "message": "Whitelist check successful",
   "meta": {

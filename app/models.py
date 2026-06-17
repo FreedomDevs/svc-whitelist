@@ -9,4 +9,3 @@ class Whitelist(Base):
 
     servername = Column(String, primary_key=True)
     userid = Column(String, primary_key=True)
-    username = Column(String)

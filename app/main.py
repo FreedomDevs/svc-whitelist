@@ -1,26 +1,24 @@
-from typing import Optional, TypeVar, Type
+from typing import Optional
 
 from fastapi import FastAPI, Request, HTTPException, Depends
-from pydantic import BaseModel
 from starlette import status
+from svcLibs.codes import HealthOK, LiveOK
 
 from app.schemas import WhitelistCreateRequest, WhitelistDeleteRequest, UserBody
-from app.responses import success_response, error_response
 from app.db import SessionLocal
 from app.models import Base, Whitelist
-from app.enums import Codes
+from app.enums import *
 from sqlalchemy import text
 from app.db import engine
 from fastapi import FastAPI, Request, Header
 
+from svcLibs.responses import success_response, error_response
+from svcLibs.middleware import register_errors_handlers
 
-
-app = FastAPI(title="svc-whitelist")
 Base.metadata.create_all(bind=engine)
 
-
-
-
+app = FastAPI(title="svc-whitelist")
+register_errors_handlers(app)
 
 async def get_server_name(
         request: Request,
@@ -76,28 +74,25 @@ def add_to_whitelist(
 
     if existing:
         return error_response(
-            message="User already in whitelist",
-            code=Codes.WHITELIST_ALREADY_EXISTS,
-            trace_id=trace_id
+            WhitelistAlreadyExists(),
+            trace_id
         )
 
     user = Whitelist(
         servername=server_name,
-        userid=req.userid,
-        username=req.username
+        userid=req.userid
     )
 
     db.add(user)
     db.commit()
 
     return success_response(
-        data={
+        {
             "servername": server_name,
             **req.dict()
         },
-        message="User added to whitelist",
-        code=Codes.WHITELIST_CREATED_OK,
-        trace_id=trace_id
+        WhitelistCreatedOk(),
+        trace_id
     )
 
 from fastapi import Header
@@ -112,7 +107,6 @@ def check_whitelist(
 
     db = SessionLocal()
 
-
     if server_name:
         exists = db.query(Whitelist).filter(
             Whitelist.servername == server_name,
@@ -120,13 +114,11 @@ def check_whitelist(
         ).first() is not None
 
         return success_response(
-            data={
-                "servername": server_name,
-                "whitelisted": exists
+            {
+                "in_whitelist": exists
             },
-            message="Whitelist status checked",
-            code=Codes.WHITELIST_CHECK_OK,
-            trace_id=trace_id
+            WhitelistCheckOk(),
+            trace_id
         )
 
 
@@ -137,14 +129,13 @@ def check_whitelist(
     servers = [r.servername for r in rows]
 
     return success_response(
-        data={
+        {
             "userid": userid,
             "servers": servers,
             "in_whitelist": bool(servers)
         },
-        message="Whitelist servers fetched",
-        code=Codes.WHITELIST_CHECK_OK,
-        trace_id=trace_id
+        WhitelistCheckOk(),
+        trace_id
     )
 
 
@@ -166,19 +157,17 @@ def remove_from_whitelist(
 
     if not user:
         return error_response(
-            message="User not found in whitelist",
-            code=Codes.WHITELIST_NOT_FOUND,
-            trace_id=trace_id
+            WhitelistNotFound(),
+            trace_id
         )
 
     db.delete(user)
     db.commit()
 
     return success_response(
-        data=None,
-        message="User removed from whitelist",
-        code=Codes.WHITELIST_REMOVED_OK,
-        trace_id=trace_id
+        None,
+        WhitelistRemovedOk(),
+        trace_id
     )
 
 
@@ -212,14 +201,13 @@ def health(request: Request):
 
 
     return success_response(
-        data={
+        {
             "status": "UP" if ready else "ERROR",
             "ready": ready,
             "details": details
         },
-        message="Service is healthy",
-        code=Codes.HEALTH_OK,
-        trace_id=trace_id
+        HealthOK(),
+        trace_id
     )
 
 @app.get("/live")
@@ -227,8 +215,7 @@ def live(request: Request):
     trace_id = request.headers.get("X-Trace-Id")
 
     return success_response(
-        data={"alive": True},
-        message="svc-whitelist alive",
-        code=Codes.LIVE_OK,
-        trace_id=trace_id
+        {"alive": True},
+        LiveOK(),
+        trace_id
     )

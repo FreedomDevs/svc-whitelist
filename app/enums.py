@@ -1,14 +1,26 @@
-class Codes:
-    # успех
-    WHITELIST_CREATED_OK = "WHITELIST_CREATED_OK"
-    WHITELIST_REMOVED_OK = "WHITELIST_REMOVED_OK"
-    WHITELIST_CHECK_OK = "WHITELIST_CHECK_OK"
+from svcLibs.codes import BaseOkCode, BaseErrorCode
 
-    HEALTH_OK = "HEALTH_OK"
-    LIVE_OK = "LIVE_OK"
+class WhitelistCreatedOk(BaseOkCode):
+    HTTPCODE = 201
+    CODE = "WHITELIST_CREATED_OK"
+    MESSAGE = "Пользователь успешно добавлен в whitelist"
 
-    # ошибка
-    WHITELIST_ALREADY_EXISTS = "WHITELIST_ALREADY_EXISTS"
-    WHITELIST_NOT_FOUND = "WHITELIST_NOT_FOUND"
+class WhitelistRemovedOk(BaseOkCode):
+    HTTPCODE = 200
+    CODE = "WHITELIST_REMOVED_OK"
+    MESSAGE = "Пользователь успешно удалён из whitelist"
 
-    HEALTH_ERROR = "HEALTH_ERROR"
+class WhitelistCheckOk(BaseOkCode):
+    HTTPCODE = 200
+    CODE = "WHITELIST_CHECK_OK"
+    MESSAGE = "Успешно получена информация по наличию игрока в whitelist"
+
+class WhitelistAlreadyExists(BaseErrorCode):
+    HTTPCODE = 400
+    CODE = "WHITELIST_ALREADY_EXISTS"
+    MESSAGE = "Пользователь уже в whitelist"
+
+class WhitelistNotFound(BaseErrorCode):
+    HTTPCODE = 404
+    CODE = "WHITELIST_NOT_FOUND"
+    MESSAGE = "Пользователь не в whitelist"
