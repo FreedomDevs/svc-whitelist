@@ -1,0 +1,11 @@
+name: Build and Deploy via SSH Stream
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-shared-workflow:
+    secrets: inherit 
+    uses: FreedomDevs/.github/.github/workflows/service-deploy.yml@main
+    with:
+      SERVICE_NAME: "svc-whitelist"
