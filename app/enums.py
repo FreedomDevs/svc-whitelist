@@ -16,7 +16,7 @@ class WhitelistCheckOk(BaseOkCode):
     MESSAGE = "Успешно получена информация по наличию игрока в whitelist"
 
 class WhitelistAlreadyExists(BaseErrorCode):
-    HTTPCODE = 400
+    HTTPCODE = 409
     CODE = "WHITELIST_ALREADY_EXISTS"
     MESSAGE = "Пользователь уже в whitelist"
 

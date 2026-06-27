@@ -7,5 +7,5 @@ Base = declarative_base()
 class Whitelist(Base):
     __tablename__ = "whitelist"
 
-    servername = Column(String, primary_key=True)
-    userid = Column(String, primary_key=True)
+    servername = Column(String, index=True)
+    userid = Column(String, index=True)

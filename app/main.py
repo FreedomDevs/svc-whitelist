@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from starlette import status
 from svcLibs.codes import HealthOK, LiveOK
 
@@ -10,7 +10,6 @@ from app.models import Base, Whitelist
 from app.enums import *
 from sqlalchemy import text
 from app.db import engine
-from fastapi import FastAPI, Request, Header
 
 from svcLibs.responses import success_response, error_response
 from svcLibs.middleware import register_errors_handlers
@@ -84,18 +83,13 @@ def add_to_whitelist(
     )
 
     db.add(user)
-    db.commit()
 
     return success_response(
-        {
-            "servername": server_name,
-            **req.dict()
-        },
+        None,
         WhitelistCreatedOk(),
         trace_id
     )
 
-from fastapi import Header
 
 @app.get("/whitelist/check")
 def check_whitelist(
@@ -131,13 +125,11 @@ def check_whitelist(
     return success_response(
         {
             "userid": userid,
-            "servers": servers,
-            "in_whitelist": bool(servers)
+            "servers": servers
         },
         WhitelistCheckOk(),
         trace_id
     )
-
 
 
 @app.delete("/whitelist")
@@ -162,16 +154,12 @@ def remove_from_whitelist(
         )
 
     db.delete(user)
-    db.commit()
 
     return success_response(
         None,
         WhitelistRemovedOk(),
         trace_id
     )
-
-
-
 
 
 @app.get("/health")
