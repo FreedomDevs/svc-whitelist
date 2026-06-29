@@ -1,4 +1,1 @@
 svcLibs @ git+https://github.com/FreedomDevs/svcLibs.git
-
-psycopg2-binary~=2.9.12
-SQLAlchemy~=2.0.50

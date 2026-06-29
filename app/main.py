@@ -2,17 +2,16 @@ from typing import Optional
 
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from starlette import status
-from svcLibs.codes import HealthOK, LiveOK
 
 from app.schemas import WhitelistCreateRequest, WhitelistDeleteRequest, UserBody
-from app.db import SessionLocal
 from app.models import Base, Whitelist
 from app.enums import *
 from sqlalchemy import text
-from app.db import engine
 
 from svcLibs.responses import success_response, error_response
 from svcLibs.middleware import register_errors_handlers
+from svcLibs.db import SessionLocal, engine
+from svcLibs.codes import HealthOK, LiveOK
 
 Base.metadata.create_all(bind=engine)
 

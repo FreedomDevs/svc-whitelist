@@ -1,6 +1,6 @@
-FROM python:3.14-alpine
+FROM elysium-registry.mcbeeland.ru/svclibs:latest
 
-RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
-  apk add --no-cache git && pip install --no-cache-dir -r requirements.txt
+#RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
+#    grep -v "svcLibs" requirements.txt | pip install --no-cache-dir -r /dev/stdin && rm -rf /root/.cache
 
 ENTRYPOINT ["uvicorn", "app.main:app", "--host", "::", "--port", "80", "--reload"]
